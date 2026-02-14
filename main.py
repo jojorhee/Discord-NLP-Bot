@@ -29,6 +29,14 @@ joke_prompt = "Make a very funny, and short joke! It can be PG-13, and cursing i
 
 roles = ["Elite", "Peasant", "Gamer", "warner", "jack", "jojo"]
 
+with open("shortjokes.csv", mode="r", encoding="utf-8") as file:
+    reader = csv.DictReader(file)
+
+    data_list = []
+
+    for row in reader:
+        data_list.append(row)
+
 '''@client.event
 async def on_ready():
     guild = discord.utils.get(client.guilds, name=GUILD)
@@ -39,17 +47,39 @@ async def on_ready():
     members = '\n - '.join([member.name for member in guild.members])
     print(f"Guild Members:\n - {members}")'''
 
-@client.tree.command(name="helloo", description="What's up fool?", guild=GUILD_ID)
+@client.tree.command(name="hello", description="What's up fool?", guild=GUILD_ID)
 async def say_hello(interaction: discord.Interaction):
     await interaction.response.send_message("Hello there 😉")
 
-@client.event
-async def on_ready():
-    await client.tree.sync(guild=GUILD_ID)
+    try:
+        guild = discord.Object(id=1468366165041615112)
+        synced = await client.tree.sync(guild=guild)
+        print(f"Synced {len(synced)} commands to guild {guild.id}")
+    except Exception as e:
+        print(f"Error syncing commands: {e}")
+
+@client.tree.command(name="help", description="erm, chat, what should I do", guild=GUILD_ID)
+async def help(interaction: discord.Interaction):
+    text = "Here are available commands: \n" \
+    "/hello - greetings from a bot! \n" \
+    "/joke - receive some laughter and joy \n" \
+    ""
+    await interaction.response.send_message(text)
+    try:
+        guild = discord.Object(id=1468366165041615112)
+        synced = await client.tree.sync(guild=guild)
+        print(f"Synced {len(synced)} commands to guild {guild.id}")
+    except Exception as e:
+        print(f"Error syncing commands: {e}")
+
+@client.tree.command(name="joke", description="laughter's the best medicine...", guild=GUILD_ID)
+async def joke(interaction: discord.Interaction):
+    await interaction.response.send_message(data_list[random.randint(0, len(data_list) - 1)]["Joke"])
 
 @client.event
 async def on_ready():
     print(f"{client.user.name} has connected to Discord!")
+    await client.tree.sync(guild=GUILD_ID)
 
 @client.event
 async def on_member_join(member):
@@ -116,21 +146,6 @@ async def poll(ctx, *, question):
     await poll_message.add_reaction("❤️")
     await poll_message.add_reaction("😘")
 
-
-@client.command()
-async def joke(ctx):
-    with open("shortjokes.csv", mode="r", encoding="utf-8") as file:
-            #line_count = sum(1 for line in file)
-            #print(line_count)
-            reader = csv.DictReader(file)
-
-            data_list = []
-
-            for row in reader:
-                data_list.append(row)
-
-
-            await ctx.send(f"{data_list[random.randint(0, len(data_list) - 1)]["Joke"]}")
 
 
 client.run(TOKEN, log_handler=handler, log_level=DEBUG)
